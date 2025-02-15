@@ -1,0 +1,36 @@
+{
+	debug
+	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+	acme_dns cloudflare {env.CF_API_TOKEN}
+}
+
+*.{env.TOP_DOMAIN} {
+	tls {
+		dns cloudflare {env.CF_API_TOKEN}
+		resolvers 1.1.1.1 1.0.0.1
+	}
+
+	log {
+		output file /var/log/caddy/site.log {
+			roll_size 10MiB
+			roll_keep 3
+			roll_keep_for 7d
+			roll_uncompressed
+		}
+	}
+
+	@foo host foo.{env.TOP_DOMAIN}
+	handle @foo {
+		respond "Foo!"
+	}
+
+	@bar host bar.{env.TOP_DOMAIN}
+	handle @bar {
+		respond "Bar!"
+	}
+
+	# Fallback for otherwise unhandled domains
+	handle {
+		abort
+	}
+}
